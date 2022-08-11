@@ -51,10 +51,10 @@ router.post("/test-post-2", function(req, res) {
 })
 
 router.post("/test-post-3", function(req, res) {
-    // let id = req.body.user
-    // let pwd= req.body.password
+    let id = req.body.user
+    let pwd= req.body.password
 
-    // console.log( id , pwd)
+    console.log( id , pwd)
 
     console.log( req.body )
 
@@ -70,4 +70,115 @@ router.post("/test-post-4", function(req, res) {
     res.send(  { msg: arr , status: true }  )
 })
 
+
+    let players =
+   [
+       {
+           "name": "manish",
+           "dob": "1/1/1995",
+           "gender": "male",
+           "city": "jalandhar",
+           "sports": [
+               "swimming"
+           ]
+       },
+       {
+           "name": "gopal",
+           "dob": "1/09/1995",
+           "gender": "male",
+           "city": "delhi",
+           "sports": [
+               "soccer"
+           ]
+       },
+       {
+           "name": "lokesh",
+           "dob": "1/1/1990",
+           "gender": "male",
+           "city": "mumbai",
+           "sports": [
+               "soccer"
+           ]
+       },
+   ]
+   router.post("/test-post-5", function(req, res) {
+    let newPlayer = req.body;
+    for(i=0; i<players.length; i++){
+        
+        if(players[i].name==newPlayer.name){
+        return res.send("this name is already exist")
+    }
+
+}
+    players.push(newPlayer)
+
+res.send({data:players, status:true})
+
+})
+
+router.post('/players-2/:indexNumber', function(req, res){
+        let newPlayer = req.body
+        let newPlayersName = newPlayer.name
+        let isNameRepeated = false
+    
+        for(let i=0; i<players.length; i++){
+            if(players[i].name == newPlayersName){
+                isNameRepeated = true;
+                break;
+            }
+        }
+    
+        if(isNameRepeated){
+            res.send("This player was already added")
+        } else {
+            players.push(newPlayer)
+            res.send(players)
+            
+        }
+     })
+
+     //you will be given an array of person (i.e an array of objects) ...each person will have a { name: string, age:Number, voting status:true/false(boolean)} take an input in query param as votingAge. and for all the people above that age, change votingStatus as true also return an array consisting of only the person that can vote
+
+     let person = [
+        {
+            name : "Sahil",
+            age : 10,
+            votingStatus : false
+        },
+        {
+            name : "Salman",
+            age : 20,
+            votingStatus : false
+        },
+        {
+            name : "Surendra",
+            age : 70,
+            votingStatus : false
+        },
+        {
+            name : "Sristhi",
+            age : 5,
+            votingStatus : false
+        },
+        {
+            name : "Sameer",
+            age : 40,
+            votingStatus : false
+        }
+     ]
+
+     router.post("/test-post-person", function(req, res) {
+        let votingAge = req.body;
+        let newVotingAge = votingAge.age;
+        let newVote = [];
+        for(i=0; i<person.length; i++){
+            
+            if(newVotingAge<person[i].age){
+               (person[i].votingStatus=true)
+               newVote.push(person[i])
+            }
+        }
+        
+        res.send({newVote})
+    });
 module.exports = router;
