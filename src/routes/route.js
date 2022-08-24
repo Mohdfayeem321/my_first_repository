@@ -1,19 +1,50 @@
 const express = require('express');
 const router = express.Router();
+const moment = require('moment');
+
+
+const raza = require('../middlewares/faheem.js')
+
+let amir = function (req, res) {
+    let now = moment();
+    const ipAddress =req.ip
+    const url=req.originalUrl
+    console.log(now.format('MMMM Do YYYY, h:mm:ss a'),",", ipAddress,",",url);
+}
+router.get("/faheem", raza.faheem, raza.aryan, raza.deep, amir)
+
+
+
+
+
 // const UserModel= require("../models/userModel.js")
-const UserController= require("../controllers/userController")
-const BookController= require("../controllers/bookController")
-const commonMW = require ("../middlewares/commonMiddlewares")
+// const UserController= require("../controllers/userController")
+// const BookController= require("../controllers/bookController")
+// const commonMW = require ("../middlewares/commonMiddlewares")
 
-router.get("/test-me", function (req, res) {
-    res.send("My first ever api!")
-})
-
-
+// // router.get("/test-me", function (req, res) {
+//     res.send("My first ever api!")
+// })
 
 
-router.post("/createBook", BookController.createBook  )
 
+
+    // console.log(now)
+    // console.log(moment().format('MMMM Do YYYY, h:mm:ss a'));
+    // console.log(moment().format('dddd'))
+    // console.log(moment().format("MMM Do YY"))
+    // console.log(moment("19600212", "YYYYMMDD").fromNow())
+    // console.log(moment().startOf('day').fromNow())
+    // console.log(moment().subtract(10, 'days').calendar())
+    //console.log()
+    // console.log(moment().subtract(6, 'days').calendar())
+    // console.log(moment().add(3, 'days').calendar())
+
+    
+    // console.log(ipAddress)
+   
+    // console.log(f)
+   
 
 
 
@@ -35,7 +66,7 @@ router.post("/createBook", BookController.createBook  )
 //     }
 // }
 
-// // e.g. restricted and open-to-all API's can be handled like below now:
+// e.g. restricted and open-to-all API's can be handled like below now:
 // router.get('/homePage', mid1, UserController.feeds)
 // router.get('/profileDetails', mid1, UserController.profileDetails)
 // router.get('/friendList', mid1, UserController.friendList)
@@ -48,7 +79,7 @@ router.post("/createBook", BookController.createBook  )
 
 
 
-router.get("/basicRoute", commonMW.mid1, commonMW.mid2, commonMW.mid3, commonMW.mid4, UserController.basicCode)
+// router.get("/basicRoute", commonMW.mid1, commonMW.mid2, commonMW.mid3, commonMW.mid4, UserController.basicCode)
 
 
 
