@@ -50,5 +50,11 @@ const deleteData = async function(req,res){
     let findAndUpdate = await userModel2.findOneAndUpdate({_id:userId}, {$set:{isDeleted:true}}, {new:true});
     res.send({status:true, msg:findAndUpdate})
 }
-// Write a **DELETE api /users/:userId** that takes the userId in the path params and marks the isDeleted attribute for a user as true. Check that request must contain **x-auth-token** header. If absent, return a suitable error.
+
 module.exports={createUser2,login,getUserData,updateData,deleteData}
+// Write a **DELETE api /users/:userId** that takes the userId in the path params and marks the isDeleted attribute for a user as true. Check that request must contain **x-auth-token** header. If absent, return a suitable error.
+
+
+
+
+
