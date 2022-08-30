@@ -18,7 +18,7 @@ router.get("/getUserData/:userId",auth.authorisation, middle.middleware, user2Co
 
 router.get("/updateData/:userId", auth.authorisation, middle.middleware, user2Controller.updateData)
 
-router.get("/deleteData/:userId", middle.middleware, user2Controller.deleteData)
+router.get("/deleteData/:userId", middle.middleware,middle.middleware, user2Controller.deleteData)
 
 // router.post("/users", userController.createUser  )
 
