@@ -1,13 +1,13 @@
 const internModel = require("../models/internModel")
 const collegeModel = require("../models/collegeModel")
 
-// =============================Using regex=====================
+// =============================Using regex==============================================
 
 const mobileNub = /[6 7 8 9][0-9]{9}/
 const checkName = /^[a-z\s]+$/i
 const emailMatch = /[a-zA-Z0-9_\-\.]+[@][a-z]+[\.][a-z]{2,3}/
 
-// ===================================create intern data============================
+// ===================================create intern data=================================
 
 const createIntern = async function (req, res) {
     try {
@@ -19,32 +19,33 @@ const createIntern = async function (req, res) {
         if (Object.keys(data).length == 0) return res.status(400).send({ status: false, message: "please use data to create intern" })
         if (Object.keys(data).length < 4) return res.status(400).send({ status: false, message: " please enter mandatory data" })
 
-        //========================= Name Validations ================================== 
+//========================= Name Validations =============================================
 
         if (!name == name || name == "") return res.status(400).send({ status: false, message: "please use name" })
         if (!checkName.test(name)) return res.status(400).send({ status: false, message: "please use correct name" })
         const Name = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
         name = Name;
 
-        //================================== Mobile validation =============================================
+//================================== Mobile validation ====================================
 
-        if (!mobile == mobile || mobile == "") return res.status(400).send({ status: false, message: "please use correct mobile number" })
+        if (!mobile == mobile || mobile == "") return res.status(400).send({ status: false, message: "please put mobile number" })
         if (!mobileNub.test(mobile)) return res.status(400).send({ status: false, message: "please use correct mobile number" })
         if (mobile.length > 10 || mobile.length < 10) return res.status(400).send({ status: false, message: "please use valid mobile number" })
 
-        //============================= Email validation ======================================================
+//============================= Email validation ===========================================
 
         if (!email == email || email == "") return res.status(400).send({ status: false, message: "please use email" })
         if (!emailMatch.test(email)) return res.status(400).send({ status: false, message: "please use correct email" })
 
-        //=================================== Data existing validation ===================================
+//=================================== Data existing validation ==============================
 
-        let validMobile = await internModel.findOne({ mobile: mobile })
-        if (validMobile) return res.status(400).send({ status: false, message: "This mobile number already registered" })
-        let validEmail = await internModel.findOne({ email: email })
+        let validateMobile = await internModel.findOne({ mobile: mobile });
+        if (validateMobile) return res.status(400).send({ status: false, message: "This mobile number already registered" })
+        
+        let validEmail = await internModel.findOne({ email: email });
         if (validEmail) return res.status(400).send({ status: false, message: "this emailId already registered" })
 
-        //==================================== College validation ==================================================
+//==================================== College validation ====================================
 
         if (!collegeName == collegeName || collegeName == "") return res.status(400).send({ status: false, message: "please use correct collegeName" })
         if (!checkName.test(collegeName)) return res.status(400).send({ status: false, message: "please use correct college name" })
@@ -52,14 +53,12 @@ const createIntern = async function (req, res) {
         let existCollegeName = await collegeModel.findOne({ name: collegeName })
         if (!existCollegeName) return res.status(404).send({ status: false, message: "this college is not exist" })
 
-        //============================== Data creating ========================================================
+//============================== Data creating ===============================================
 
-        let checkCollege = await collegeModel.findOne({ name: collegeName })
+        let collegeId = existCollegeName._id
 
-        let collegeId = checkCollege._id
+        let isDeleted = existCollegeName.isDeleted
 
-        let isDeleted = checkCollege.isDeleted
-        
         data = { name, mobile, email, collegeId, isDeleted }
 
         await internModel.create(data)
@@ -72,21 +71,21 @@ const createIntern = async function (req, res) {
 }
 
 
-//=========================== Get Interns Data ==========================
+//=========================== Get Interns Data =================================================
 
 let getInternByCollege = async function (req, res) {
     try {
 
         let collegeName = req.query.collegeName;
 
-        //=========================== Check college name validation ==================================================
+//=========================== Check college name validation ====================================
 
         if (!collegeName) return res.status(404).send({ status: false, message: "please provide collegeName" });
         const data = await collegeModel.findOne({ name: collegeName, isDeleted: false })
 
         if (!data) return res.status(404).send({ status: false, message: `college: ${collegeName} not found...` })
 
-        //======================================== Get intern data =================================================
+//======================================== Get intern data =====================================
 
         let collegeId = data._id
 

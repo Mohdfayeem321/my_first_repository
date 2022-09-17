@@ -1,13 +1,13 @@
 const collegeModel = require("../models/collegeModel");
 const regexUrl = /(https?:\/\/[^\s]+)/g;
-const collegeReg = /^[a-zA-Z ]+$/;
+const collegeReg = /^[a-zA-Z ,'-]+$/;
 
-// =====================create college======================================
+// =====================================  create college ==============================================
 
 const collegeCreate = async (req, res) => {
     try {
 
-    let data = req.body
+    let data = req.body;
     let { name, fullName, logoLink } = data;
 
     if(Object.keys(data).length<3) return res.status(400).send({status:false, message:"please fill required value which is mandatory"})
@@ -41,9 +41,7 @@ const collegeCreate = async (req, res) => {
         return res.status(400).send({ status: false, msg: 'Please fill logo link' })
     }
     if (!regexUrl.test(logoLink.trim()))  return res.status(400).send({ status: false, message: "Provide valid url logolink in request..." })
-
-
-
+    
     let collegeData = await collegeModel.create(data);
 
     let isDeleted = collegeData.isDeleted;
