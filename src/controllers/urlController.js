@@ -49,8 +49,19 @@ const shortenURL = async function (req, res) {
         if (validUrl(longUrl) != true) return res.status(400).send({ status: false, message: `${validUrl(longUrl)}` })
 
 
+        //  ------------- url_in_Cache ------------- 
+        let url_in_Cache = await GET_ASYNC(`${longUrl}`)
+        if (url_in_Cache) {
+            return res.status(200).send({ status: true, message: "Url is already present", data: JSON.parse(url_in_Cache) })
+        }
+
+        //  ------------- url_in_DB ------------- 
         let url_in_DB = await urlModel.findOne({ longUrl: longUrl }).select({ _id: 0, updatedAt: 0, createdAt: 0, __v: 0 })
-        if (url_in_DB) return res.status(409).send({ status: false, message: "LongUrl is already present", shortUrl: url_in_DB.shortUrl })
+        if (url_in_DB) {
+            await SET_ASYNC(`${longUrl}`, JSON.stringify(url_in_DB))
+
+            return res.status(200).send({ status: true, message: "LongUrl is already present", shortUrl: url_in_DB.shortUrl })
+        }
 
 
         let urlCode = shortid.generate().toLowerCase()
@@ -58,14 +69,18 @@ const shortenURL = async function (req, res) {
         let shortUrl_in_DB = await urlModel.findOne({ urlCode: urlCode })
         if (shortUrl_in_DB) return res.status(409).send({ status: false, message: "shortUrl is already present" })
 
-
-
         let baseurl = "http://localhost:3000/"
         let shortUrl = baseurl + urlCode
         longUrl = longUrl.trim()
 
 
-        let data = await urlModel.create({ longUrl, shortUrl, urlCode })
+        let createdData = await urlModel.create({ shortUrl, urlCode, longUrl })
+        let data = {
+            urlCode: createdData.urlCode,
+            shortUrl: createdData.shortUrl,
+            longUrl: createdData.longUrl
+        }
+
         return res.status(201).send({ status: true, message: "sortUrl successfully created", data: data })
 
     }
