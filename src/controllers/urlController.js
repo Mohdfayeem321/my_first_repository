@@ -42,11 +42,11 @@ const shortenURL = async function (req, res) {
 
         if (Object.keys(body).length == 0) return res.status(400).send({ status: false, message: "please enter url in body" })
 
-        let { longUrl, ...rest } = body;
+        let { originalUrl, ...rest } = body;
 
         if (Object.keys(rest).length > 0) return res.status(400).send({ status: false, message: `You can not fill these:-( ${Object.keys(rest)} ) data ` })
 
-        if (validUrl(longUrl) != true) return res.status(400).send({ status: false, message: `${validUrl(longUrl)}` })
+        if (validUrl(originalUrl) != true) return res.status(400).send({ status: false, message: `${validUrl(longUrl)}` })
 
 
         let url_in_DB = await urlModel.findOne({ longUrl: originalUrl }).select({ _id: 0, updatedAt: 0, createdAt: 0, __v: 0 })
@@ -62,7 +62,7 @@ const shortenURL = async function (req, res) {
 
         let baseurl = "http://localhost:3000/"
         let shortUrl = baseurl + urlCode
-        longUrl = longUrl.trim()
+        longUrl = originalUrl.trim()
 
 
         let data = await urlModel.create({ longUrl, shortUrl, urlCode })
@@ -94,7 +94,7 @@ const getUrl = async function (req, res) {
             console.log("from DB")
             if (!url) return res.status(404).send({ status: false, message: `${urlCode} urlCode not found` })
             await SET_ASYNC(`${req.params.urlCode}`, JSON.stringify(url.longUrl))
-            const ex = await EXP_ASYNC(`${req.params.urlCode}`, 20)
+            await EXP_ASYNC(`${req.params.urlCode}`, 10)
             // return res.send({ data: url });
             return res.status(302).redirect(url.longUrl)
         }
