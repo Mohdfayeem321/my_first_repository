@@ -49,8 +49,19 @@ const shortenURL = async function (req, res) {
         if (validUrl(originalUrl) != true) return res.status(400).send({ status: false, message: `${validUrl(longUrl)}` })
 
 
-        let url_in_DB = await urlModel.findOne({ longUrl: originalUrl }).select({ _id: 0, updatedAt: 0, createdAt: 0, __v: 0 })
-        if (url_in_DB) return res.status(409).send({ status: false, message: "LongUrl is already present", shortUrl: url_in_DB.shortUrl })
+        //  ------------- url_in_Cache ------------- 
+        let url_in_Cache = await GET_ASYNC(`${longUrl}`)
+        if (url_in_Cache) {
+            return res.status(200).send({ status: true, message: "Url is already present", data: JSON.parse(url_in_Cache) })
+        }
+
+        //  ------------- url_in_DB ------------- 
+        let url_in_DB = await urlModel.findOne({ longUrl: longUrl }).select({ _id: 0, updatedAt: 0, createdAt: 0, __v: 0 })
+        if (url_in_DB) {
+            await SET_ASYNC(`${longUrl}`, JSON.stringify(url_in_DB))
+
+            return res.status(200).send({ status: true, message: "LongUrl is already present", shortUrl: url_in_DB.shortUrl })
+        }
 
 
         let urlCode = shortid.generate().toLowerCase()
@@ -58,14 +69,21 @@ const shortenURL = async function (req, res) {
         let shortUrl_in_DB = await urlModel.findOne({ urlCode: urlCode })
         if (shortUrl_in_DB) return res.status(409).send({ status: false, message: "shortUrl is already present" })
 
+        let port = req.get("host")
 
-
-        let baseurl = "http://localhost:3000/"
+        // let baseurl = "http://localhost:3000/"
+        let baseurl = `http://localhost:${port}/`
         let shortUrl = baseurl + urlCode
         longUrl = originalUrl.trim()
 
 
-        let data = await urlModel.create({ longUrl, shortUrl, urlCode })
+        let createdData = await urlModel.create({ shortUrl, urlCode, longUrl })
+        let data = {
+            urlCode: createdData.urlCode,
+            shortUrl: createdData.shortUrl,
+            longUrl: createdData.longUrl
+        }
+
         return res.status(201).send({ status: true, message: "sortUrl successfully created", data: data })
 
     }
@@ -79,23 +97,22 @@ const shortenURL = async function (req, res) {
 const getUrl = async function (req, res) {
     try {
 
+
         let urlCode = req.params.urlCode
 
         if (!shortid.isValid(urlCode)) return res.status(400).send({ status: false, message: `Invalid urlCode: - ${urlCode}` })
 
-        // let cachedUrl = await DEL_ASYNC(`${req.params.urlCode}`)
         let cachedUrl = await GET_ASYNC(`${req.params.urlCode}`)
-        if (cachedUrl) {
-            console.log("from cache");
-            // return res.send(`through caching - ${cachedUrl}`)
-            return res.status(302).redirect(cachedUrl)
-        } else {
+        if (cachedUrl) { return res.status(302).redirect(cachedUrl) }
+
+        else {
             let url = await urlModel.findOne({ urlCode: urlCode })//.select({ longUrl: 1, _id: 0 })
-            console.log("from DB")
+
             if (!url) return res.status(404).send({ status: false, message: `${urlCode} urlCode not found` })
-            await SET_ASYNC(`${req.params.urlCode}`, JSON.stringify(url.longUrl))
-            await EXP_ASYNC(`${req.params.urlCode}`, 10)
-            // return res.send({ data: url });
+            const setCache = await SET_ASYNC(`${req.params.urlCode}`, JSON.stringify(url.longUrl))
+
+            const exp = await EXP_ASYNC(`${req.params.urlCode}`, 20)
+
             return res.status(302).redirect(url.longUrl)
         }
 
@@ -103,4 +120,21 @@ const getUrl = async function (req, res) {
         return res.status(500).send({ status: false, message: err.message })
     }
 }
-module.exports = { shortenURL, getUrl }
+
+
+
+const deleteUrl = async function (req, res) {
+    try {
+        let urlCode = req.params.urlCode
+
+        if (!shortid.isValid(urlCode)) return res.status(400).send({ status: false, message: `Invalid urlCode: - ${urlCode}` })
+
+        let deletedUrl = await DEL_ASYNC(`${urlCode}`)
+        if (deletedUrl == 0) return res.send(`no cache found`)
+        return res.send(`cache deleted successful`)
+
+    } catch (err) {
+        return res.status(500).send({ status: false, message: err.message })
+    }
+}
+module.exports = { shortenURL, getUrl, deleteUrl }
