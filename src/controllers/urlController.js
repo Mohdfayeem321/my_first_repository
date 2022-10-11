@@ -37,7 +37,7 @@ const validUrl = function (value) {
 
 
 const shortenURL = async function (req, res) {
-    try {
+    // try {
         let body = req.body
 
         if (Object.keys(body).length == 0) return res.status(400).send({ status: false, message: "please enter url in body" })
@@ -50,15 +50,15 @@ const shortenURL = async function (req, res) {
 
 
         //  ------------- url_in_Cache ------------- 
-        let url_in_Cache = await GET_ASYNC(`${longUrl}`)
+        let url_in_Cache = await GET_ASYNC(`${originalUrl}`)
         if (url_in_Cache) {
             return res.status(200).send({ status: true, message: "Url is already present", data: JSON.parse(url_in_Cache) })
         }
 
         //  ------------- url_in_DB ------------- 
-        let url_in_DB = await urlModel.findOne({ longUrl: longUrl }).select({ _id: 0, updatedAt: 0, createdAt: 0, __v: 0 })
+        let url_in_DB = await urlModel.findOne({ longUrl: originalUrl }).select({ _id: 0, updatedAt: 0, createdAt: 0, __v: 0 })
         if (url_in_DB) {
-            await SET_ASYNC(`${longUrl}`, JSON.stringify(url_in_DB))
+            await SET_ASYNC(`${originalUrl}`, JSON.stringify(url_in_DB))
 
             return res.status(200).send({ status: true, message: "LongUrl is already present", shortUrl: url_in_DB.shortUrl })
         }
@@ -86,10 +86,10 @@ const shortenURL = async function (req, res) {
 
         return res.status(201).send({ status: true, message: "sortUrl successfully created", data: data })
 
-    }
-    catch (err) {
-        return res.status(500).send({ status: false, message: err.message })
-    }
+    // }
+    // catch (err) {
+    //     return res.status(500).send({ status: false, message: err.message })
+    // }
 
 }
 
@@ -103,7 +103,7 @@ const getUrl = async function (req, res) {
         if (!shortid.isValid(urlCode)) return res.status(400).send({ status: false, message: `Invalid urlCode: - ${urlCode}` })
 
         let cachedUrl = await GET_ASYNC(`${req.params.urlCode}`)
-        if (cachedUrl) { return res.status(302).redirect(cachedUrl) }
+        if (cachedUrl) { return res.status(302).redirect(cachedUrl)}
 
         else {
             let url = await urlModel.findOne({ urlCode: urlCode })//.select({ longUrl: 1, _id: 0 })
